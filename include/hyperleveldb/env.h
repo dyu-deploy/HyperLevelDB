@@ -69,6 +69,8 @@ class Env {
   // The returned file will only be accessed by one thread at a time.
   virtual Status NewWritableFile(const std::string& fname,
                                  WritableFile** result) = 0;
+  virtual Status NewAppendableFile(const std::string& fname,
+                                 WritableFile** result) = 0;
   virtual Status NewConcurrentWritableFile(const std::string& fname,
                                            ConcurrentWritableFile** result) = 0;
 

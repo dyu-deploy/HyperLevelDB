@@ -619,6 +619,19 @@ class PosixEnv : public Env {
     }
     return s;
   }
+  
+  virtual Status NewAppendableFile(const std::string& fname,
+                                   WritableFile** result) {
+    Status s;
+    FILE* f = fopen(fname.c_str(), "a");
+    if (f == NULL) {
+      *result = NULL;
+      s = IOError(fname, errno);
+    } else {
+      *result = new PosixWritableFile(fname, f);
+    }
+    return s;
+  }
 
   virtual Status NewConcurrentWritableFile(const std::string& fname,
                                            ConcurrentWritableFile** result) {
