@@ -135,7 +135,7 @@ Status Writer::EmitPhysicalRecordAt(RecordType t, const char* ptr, uint64_t offs
 }
 
 AppendOnlyWriter::AppendOnlyWriter(WritableFile* dest, uint64_t dest_length)
-    : dest_(dest), block_offset_(dest_length % kBlockSize) {
+    : dest_(dest), dest_length_(dest_length), block_offset_(dest_length % kBlockSize) {
   InitTypeCrc(type_crc_);
 }
 
@@ -154,14 +154,18 @@ Status AppendOnlyWriter::AddRecord(const Slice& slice) {
   do {
     const int leftover = kBlockSize - block_offset_;
     assert(leftover >= 0);
-    if (leftover < kHeaderSize) {
+    if (leftover == 0) {
+      // noop
+    } else if (leftover < kHeaderSize) {
       // Switch to a new block
-      if (leftover > 0) {
-        // Fill the trailer (literal below relies on kHeaderSize being 7)
-        assert(kHeaderSize == 7);
-        dest_->Append(Slice("\x00\x00\x00\x00\x00\x00", leftover));
-      }
+      // Fill the trailer (literal below relies on kHeaderSize being 7)
+      assert(kHeaderSize == 7);
+      s = dest_->Append(Slice("\x00\x00\x00\x00\x00\x00", leftover));
+      if (!s.ok())
+        return s;
+      
       block_offset_ = 0;
+      dest_length_ += leftover;
     }
 
     // Invariant: we never leave < kHeaderSize bytes in a block.
@@ -207,13 +211,20 @@ Status AppendOnlyWriter::EmitPhysicalRecord(RecordType t, const char* ptr, size_
 
   // Write the header and the payload
   Status s = dest_->Append(Slice(buf, kHeaderSize));
-  if (s.ok()) {
-    s = dest_->Append(Slice(ptr, n));
-    if (s.ok()) {
-      s = dest_->Flush();
-    }
-  }
-  block_offset_ += kHeaderSize + n;
+  if (!s.ok())
+    return s;
+  
+  block_offset_ += kHeaderSize;
+  dest_length_ += kHeaderSize;
+  
+  s = dest_->Append(Slice(ptr, n));
+  if (!s.ok())
+    return s;
+  
+  block_offset_ += n;
+  dest_length_ += n;
+  
+  s = dest_->Flush();
   return s;
 }
 

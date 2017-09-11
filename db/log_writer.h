@@ -57,6 +57,7 @@ class AppendOnlyWriter {
   Status AddRecord(const Slice& slice);
 
   WritableFile* dest_;
+  uint64_t dest_length_;
   int block_offset_;       // Current offset in block
 
  private:
