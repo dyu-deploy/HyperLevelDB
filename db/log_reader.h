@@ -73,7 +73,7 @@ class Reader {
   uint64_t end_of_buffer_offset_;
 
   // Offset at which to start looking for the first record to return
-  uint64_t const initial_offset_;
+  uint64_t initial_offset_;
 
   // Extend record types with the following special values
   enum {
