@@ -32,6 +32,14 @@ Reader::~Reader() {
   delete[] backing_store_;
 }
 
+void Reset(uint64_t offset)
+{
+    eof_ = false;
+    last_record_offset_ = 0;
+    end_of_buffer_offset_ = 0;
+    initial_offset_ = offset;
+}
+
 bool Reader::SkipToInitialBlock() {
   size_t offset_in_block = initial_offset_ % kBlockSize;
   uint64_t block_start_location = initial_offset_ - offset_in_block;

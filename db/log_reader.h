@@ -56,6 +56,8 @@ class Reader {
   //
   // Undefined before the first call to ReadRecord.
   uint64_t LastRecordOffset();
+  
+  void Reset(uint64_t offset);
 
  private:
   SequentialFile* const file_;
