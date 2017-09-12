@@ -32,7 +32,7 @@ Reader::~Reader() {
   delete[] backing_store_;
 }
 
-void Reset(uint64_t offset)
+void Reader::Reset(uint64_t offset)
 {
     eof_ = false;
     last_record_offset_ = 0;
