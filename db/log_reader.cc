@@ -79,7 +79,7 @@ bool Reader::SkipToInitialBlock() {
 }
 
 bool Reader::ReadRecord(Slice* record, std::string* scratch) {
-  if (last_record_offset_ < initial_offset_) {
+  if (reset_ || last_record_offset_ < initial_offset_) {
     if (!SkipToInitialBlock()) {
       return false;
     }
