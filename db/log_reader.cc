@@ -35,7 +35,7 @@ Reader::~Reader() {
 
 void Reader::Reset(uint64_t offset)
 {
-    if (offset == initial_offset_)
+    if (offset == initial_offset_ && buffer_.size_ == 0 && last_record_offset_ == 0 && end_of_buffer_offset_ == 0)
         return;
     
     reset_ = true;
