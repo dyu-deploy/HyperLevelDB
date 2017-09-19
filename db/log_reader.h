@@ -66,6 +66,7 @@ class Reader {
   char* const backing_store_;
   Slice buffer_;
   bool eof_;   // Last Read() indicated EOF by returning < kBlockSize
+  bool reset_;
 
   // Offset of the last record returned by ReadRecord.
   uint64_t last_record_offset_;

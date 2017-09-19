@@ -189,6 +189,9 @@ class SequentialFile {
   //
   // REQUIRES: External synchronization
   virtual Status Skip(uint64_t n) = 0;
+  
+  // Similar to Skip but is absolute (Skip is relative to current position).
+  virtual Status Seek(uint64_t n) = 0;
 
  private:
   // No copying allowed

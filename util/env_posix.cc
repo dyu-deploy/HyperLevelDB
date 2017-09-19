@@ -68,6 +68,13 @@ class PosixSequentialFile: public SequentialFile {
     }
     return Status::OK();
   }
+  
+  virtual Status Seek(uint64_t n) {
+    if (fseek(file_, n, SEEK_SET)) {
+      return IOError(filename_, errno);
+    }
+    return Status::OK();
+  }
 };
 
 // pread() based random-access

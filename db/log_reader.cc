@@ -23,6 +23,7 @@ Reader::Reader(SequentialFile* file, Reporter* reporter, bool checksum,
       backing_store_(new char[kBlockSize]),
       buffer_(),
       eof_(false),
+      reset_(false),
       last_record_offset_(0),
       end_of_buffer_offset_(0),
       initial_offset_(initial_offset) {
@@ -34,6 +35,12 @@ Reader::~Reader() {
 
 void Reader::Reset(uint64_t offset)
 {
+    if (offset == initial_offset_)
+        return;
+    
+    reset_ = true;
+    buffer_.clear();
+    
     eof_ = false;
     last_record_offset_ = 0;
     end_of_buffer_offset_ = 0;
@@ -53,7 +60,14 @@ bool Reader::SkipToInitialBlock() {
   end_of_buffer_offset_ = block_start_location;
 
   // Skip to start of first block that can contain the initial record
-  if (block_start_location > 0) {
+  if (reset_) {
+    reset_ = false;
+    Status skip_status = file_->Seek(block_start_location);
+    if (!skip_status.ok()) {
+      ReportDrop(block_start_location, skip_status);
+      return false;
+    }
+  } else if (block_start_location > 0) {
     Status skip_status = file_->Skip(block_start_location);
     if (!skip_status.ok()) {
       ReportDrop(block_start_location, skip_status);
