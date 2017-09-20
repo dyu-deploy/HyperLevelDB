@@ -73,6 +73,9 @@ class DB {
   // Returns OK on success, non-OK on failure.
   // Note: consider setting options.sync = true.
   virtual Status Write(const WriteOptions& options, WriteBatch* updates) = 0;
+  
+  // Same as above (the data that the batch holds is basically the slice passed here).
+  virtual Status WriteUpdates(const WriteOptions& options, Slice updates) = 0;
 
   // If the database contains an entry for "key" store the
   // corresponding value in *value and return OK.

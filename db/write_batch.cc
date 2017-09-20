@@ -42,8 +42,7 @@ void WriteBatch::Clear() {
   rep_.resize(kHeader);
 }
 
-Status WriteBatch::Iterate(Handler* handler) const {
-  Slice input(rep_);
+static Status IterateUpdates(WriteBatch::Handler* handler, Slice input, int count) {
   if (input.size() < kHeader) {
     return Status::Corruption("malformed WriteBatch (too small)");
   }
@@ -75,11 +74,15 @@ Status WriteBatch::Iterate(Handler* handler) const {
         return Status::Corruption("unknown WriteBatch tag");
     }
   }
-  if (found != WriteBatchInternal::Count(this)) {
+  if (found != count) {
     return Status::Corruption("WriteBatch has wrong count");
   } else {
     return Status::OK();
   }
+}
+
+Status WriteBatch::Iterate(Handler* handler) const {
+  return IterateUpdates(handler, Slice(rep_), WriteBatchInternal::Count(this));
 }
 
 int WriteBatchInternal::Count(const WriteBatch* b) {
@@ -141,6 +144,14 @@ Status WriteBatchInternal::InsertInto(const WriteBatch* b,
   inserter.sequence_ = WriteBatchInternal::Sequence(b);
   inserter.mem_ = memtable;
   return b->Iterate(&inserter);
+}
+
+Status WriteBatchInternal::InsertUpdatesInto(const Slice updates,
+                                      MemTable* memtable) {
+  MemTableInserter inserter;
+  inserter.sequence_ = SequenceNumber(DecodeFixed64(updates.data_));
+  inserter.mem_ = memtable;
+  return IterateUpdates(&inserter, updates, DecodeFixed32(updates.data_ + 8));
 }
 
 void WriteBatchInternal::SetContents(WriteBatch* b, const Slice& contents) {
