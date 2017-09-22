@@ -41,6 +41,8 @@ class WriteBatchInternal {
   static Status InsertInto(const WriteBatch* batch, MemTable* memtable);
   
   static Status InsertUpdatesInto(const Slice updates, MemTable* memtable);
+  
+  static Status InsertUpdatesWithHandlerInto(const Slice updates, MemTable* memtable, std::function<void(const Slice&, const Slice&)> handler);
 
   static void Append(WriteBatch* dst, const WriteBatch* src);
 };

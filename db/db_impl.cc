@@ -1524,7 +1524,7 @@ Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates) {
   return s;
 }
 
-Status DBImpl::WriteUpdates(const WriteOptions& options, Slice updates) {
+Status DBImpl::WriteUpdates(const WriteOptions& options, Slice updates, std::function<void(const Slice&, const Slice&)> handler) {
   Writer w(&writers_mutex_);
   Status s;
   s = SequenceWriteBeginDiff(&w, DecodeFixed32(updates.data_ + 8));
@@ -1541,7 +1541,8 @@ Status DBImpl::WriteUpdates(const WriteOptions& options, Slice updates) {
       s = w.logfile_->Sync();
     }
     if (s.ok()) {
-      s = WriteBatchInternal::InsertUpdatesInto(updates, w.mem_);
+      s = handler == NULL ? WriteBatchInternal::InsertUpdatesInto(updates, w.mem_) :
+          WriteBatchInternal::InsertUpdatesWithHandlerInto(updates, w.mem_, handler);
     }
   }
 
