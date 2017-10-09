@@ -986,7 +986,7 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
           (unsigned long long) output_number,
           (unsigned long long) current_entries,
           (unsigned long long) current_bytes);
-      
+      /*
   		// Writing current_bytes to disk is considered no expense(cost no time),
   		// so we calculate how many IOs will match the compaction speed,
   		// then sleep 1s/IOs
@@ -1001,7 +1001,7 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   			Log(options_.info_log, "compaction_speed: %d MB, pause: %d us",
   				options_.compaction_speed, pause);
   			env_->SleepForMicroseconds(pause);
-  		}
+  		}*/
     }
   }
   return s;
